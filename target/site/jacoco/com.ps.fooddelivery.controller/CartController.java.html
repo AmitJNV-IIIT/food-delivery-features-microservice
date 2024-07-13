@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CartController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Food-Delivery</a> &gt; <a href="index.source.html" class="el_package">com.ps.fooddelivery.controller</a> &gt; <span class="el_source">CartController.java</span></div><h1>CartController.java</h1><pre class="source lang-java linenums">package com.ps.fooddelivery.controller;
+import com.ps.fooddelivery.dto.CartDTO;
+import com.ps.fooddelivery.exception.custom.ResourceNotFoundException;
+import com.ps.fooddelivery.modal.Cart;
+import com.ps.fooddelivery.service.CartService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping(&quot;/api/cart&quot;)
+@CrossOrigin(origins = &quot;http://localhost:3000&quot;)
+<span class="fc" id="L20">public class CartController {</span>
+
+<span class="fc" id="L22">    private static final Logger logger = LoggerFactory.getLogger(CartController.class);</span>
+
+    @Autowired
+    private CartService cartService;
+
+    @PostMapping(&quot;/add&quot;)
+    public ResponseEntity&lt;String&gt; addToCart(@RequestBody CartDTO cartDTO) {
+<span class="fc" id="L29">        logger.info(&quot;Entering addToCart with cartDTO: {}&quot;, cartDTO);</span>
+
+        // Convert CartDTO to Cart entity
+<span class="fc" id="L32">        var cart = new Cart();</span>
+<span class="fc" id="L33">        cart.setUserId(cartDTO.getUserId());</span>
+<span class="fc" id="L34">        cart.setName(cartDTO.getName());</span>
+<span class="fc" id="L35">        cart.setPrice(cartDTO.getPrice());</span>
+<span class="fc" id="L36">        cart.setItems(cartDTO.getItems().stream()</span>
+<span class="fc" id="L37">                .map(dto -&gt; new Cart.CartItem(dto.getFoodId(), dto.getQuantity()))</span>
+<span class="fc" id="L38">                .collect(Collectors.toList()));</span>
+
+        try {
+<span class="fc" id="L41">            cartService.addToCart(cart);</span>
+<span class="fc" id="L42">            logger.info(&quot;Cart item added successfully: {}&quot;, cart);</span>
+<span class="fc" id="L43">            return ResponseEntity.ok(&quot;Cart item added successfully&quot;);</span>
+<span class="fc" id="L44">        } catch (Exception e) {</span>
+<span class="fc" id="L45">            logger.error(&quot;Failed to add cart item: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L46">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(&quot;Failed to add cart item&quot;);</span>
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;Cart&gt; getCartItems(@RequestParam String userId) {
+<span class="fc" id="L52">        logger.info(&quot;Entering getCartItems with userId: {}&quot;, userId);</span>
+<span class="fc" id="L53">        List&lt;Cart&gt; cartList = cartService.getCart(userId);</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (cartList.isEmpty()) {</span>
+<span class="fc" id="L55">            throw new ResourceNotFoundException(&quot;No cart items found for userId: &quot; + userId);</span>
+        }
+<span class="fc" id="L57">        var cart = cartList.get(0);</span>
+<span class="fc" id="L58">        logger.info(&quot;Cart items retrieved successfully for userId: {}&quot;, userId);</span>
+<span class="fc" id="L59">        return ResponseEntity.ok(cart);</span>
+    }
+
+    @GetMapping(&quot;/cartQuantity&quot;)
+    public ResponseEntity&lt;Integer&gt; getCartNumber() {
+<span class="fc" id="L64">        List&lt;Cart&gt; cartAll = cartService.getCartAll();</span>
+<span class="fc" id="L65">        int totalQuantity = cartAll.size();</span>
+<span class="fc" id="L66">        return ResponseEntity.ok(totalQuantity);</span>
+    }
+
+    @GetMapping(&quot;/all&quot;)
+    public ResponseEntity&lt;List&lt;Cart&gt;&gt; getCartItemsAll() {
+<span class="fc" id="L71">        logger.info(&quot;Entering getCartItemsAll&quot;);</span>
+<span class="fc" id="L72">        List&lt;Cart&gt; cartAll = cartService.getCartAll();</span>
+<span class="fc" id="L73">        logger.info(&quot;All cart items retrieved successfully&quot;);</span>
+<span class="fc" id="L74">        return ResponseEntity.ok(cartAll);</span>
+    }
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;String&gt; removeCartItem(@PathVariable String id) {
+<span class="fc" id="L79">        logger.info(&quot;Entering removeCartItem with id: {}&quot;, id);</span>
+<span class="fc" id="L80">        cartService.deleteItemFromCart(id);</span>
+<span class="fc" id="L81">        logger.info(&quot;Item removed from cart successfully with id: {}&quot;, id);</span>
+<span class="fc" id="L82">        return ResponseEntity.ok(&quot;Removed from cart&quot;);</span>
+    }
+
+    @DeleteMapping
+    public ResponseEntity&lt;String&gt; clearCart() {
+<span class="fc" id="L87">        logger.info(&quot;Entering clearCart&quot;);</span>
+<span class="fc" id="L88">        cartService.remove();</span>
+<span class="fc" id="L89">        logger.info(&quot;All items removed from cart successfully&quot;);</span>
+<span class="fc" id="L90">        return ResponseEntity.ok(&quot;Removed all&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

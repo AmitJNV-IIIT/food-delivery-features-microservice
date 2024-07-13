@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CartServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Food-Delivery</a> &gt; <a href="index.source.html" class="el_package">com.ps.fooddelivery.serviceimpl</a> &gt; <span class="el_source">CartServiceImpl.java</span></div><h1>CartServiceImpl.java</h1><pre class="source lang-java linenums">package com.ps.fooddelivery.serviceimpl;
+
+import com.ps.fooddelivery.exception.custom.ResourceNotFoundException;
+import com.ps.fooddelivery.modal.Cart;
+import com.ps.fooddelivery.repository.CartRepository;
+import com.ps.fooddelivery.service.CartService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+
+@Service
+<span class="fc" id="L15">public class CartServiceImpl implements CartService {</span>
+
+<span class="fc" id="L17">    private static final Logger logger = LoggerFactory.getLogger(CartServiceImpl.class);</span>
+
+    @Autowired
+    private CartRepository cartRepository;
+
+    @Override
+    public void addToCart(Cart cart) {
+<span class="fc" id="L24">        logger.info(&quot;Entering addToCart with cart: {}&quot;, cart);</span>
+<span class="fc" id="L25">        cartRepository.save(cart);</span>
+<span class="fc" id="L26">        logger.info(&quot;Cart item added successfully: {}&quot;, cart);</span>
+<span class="fc" id="L27">    }</span>
+
+    @Override
+    public List&lt;Cart&gt; getCart(String userId) {
+<span class="fc" id="L31">        logger.info(&quot;Entering getCart with userId: {}&quot;, userId);</span>
+<span class="fc" id="L32">        List&lt;Cart&gt; cartList = cartRepository.findByUserId(userId);</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        if (cartList.isEmpty()) {</span>
+<span class="fc" id="L34">            logger.error(&quot;No cart items found for userId: {}&quot;, userId);</span>
+<span class="fc" id="L35">            throw new ResourceNotFoundException(&quot;Cart items not found for userId: &quot; + userId);</span>
+        }
+<span class="fc" id="L37">        logger.info(&quot;Cart items retrieved successfully for userId: {}&quot;, userId);</span>
+<span class="fc" id="L38">        return cartList;</span>
+    }
+
+    @Override
+    public List&lt;Cart&gt; getCartAll() {
+<span class="fc" id="L43">        logger.info(&quot;Entering getCartAll&quot;);</span>
+<span class="fc" id="L44">        List&lt;Cart&gt; cartAll = cartRepository.findAll();</span>
+<span class="fc" id="L45">        logger.info(&quot;All cart items retrieved successfully&quot;);</span>
+<span class="fc" id="L46">        return cartAll;</span>
+    }
+
+    @Override
+    public void deleteItemFromCart(String id) {
+<span class="fc" id="L51">        logger.info(&quot;Entering deleteItemFromCart with id: {}&quot;, id);</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (!cartRepository.existsById(id)) {</span>
+<span class="fc" id="L53">            logger.error(&quot;Cart item with id: {} not found&quot;, id);</span>
+<span class="fc" id="L54">            throw new ResourceNotFoundException(&quot;Cart item not found with id: &quot; + id);</span>
+        }
+<span class="fc" id="L56">        cartRepository.deleteById(id);</span>
+<span class="fc" id="L57">        logger.info(&quot;Cart item deleted successfully with id: {}&quot;, id);</span>
+<span class="fc" id="L58">    }</span>
+
+    @Override
+    public void remove() {
+<span class="fc" id="L62">        logger.info(&quot;Entering remove&quot;);</span>
+<span class="fc" id="L63">        cartRepository.deleteAll();</span>
+<span class="fc" id="L64">        logger.info(&quot;All cart items removed successfully&quot;);</span>
+<span class="fc" id="L65">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
