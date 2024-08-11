@@ -37,6 +37,8 @@ o The cart icon updates with the number of items.
 o Users can select a payment method.
 o A confirmation message is shown after the payment.
 
+NFRs of Application:
+
 i. 100% method coverage
 ii. 95% block/line coverage
 iii. Code Quality - 0 Blocker, Critical & Major issues reported by Sonarqube, ESLint
